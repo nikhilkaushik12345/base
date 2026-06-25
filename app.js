@@ -25,7 +25,7 @@ app.get("/callback", (req, res) => {
 });
 
 /**
- * Exchange code → token (PKCE ENABLED)
+ * Exchange code → token
  */
 app.post("/exchange", async (req, res) => {
   try {
