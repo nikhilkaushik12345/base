@@ -57,15 +57,19 @@ app.post("/exchange", async (req, res) => {
   }
 });
 
+/**
+ * MCP REQUEST (UPDATED EXACTLY AS YOU REQUESTED)
+ */
 app.post("/mcp-request", async (req, res) => {
   try {
     const { access_token } = req.body;
 
-    const mcpRes = await fetch("https://mcp.base.org/", {
+    const mcpRes = await fetch("https://mcp.base.org/mcp", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${access_token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Accept": "text/event-stream, application/json",
+        "Authorization": `Bearer ${access_token}`
       },
       body: JSON.stringify({
         jsonrpc: "2.0",
