@@ -9,32 +9,23 @@
 
 let savedAccessToken = null;
 
-/**
- * Get code from URL
- */
 function getAuthorizationCodeFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get('code');
 }
 
-/**
- * Get state from URL
- */
 function getStateFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get('state');
 }
 
 /**
- * STATIC PKCE (ONLY CHANGE)
+ * YOUR STATIC PKCE CREDENTIALS
  */
-const CODE_VERIFIER = "m8vKQ1pZ7cTn4Xy9R2bL6sV0hJ5dF3aP8wE1qN9u";
-const CODE_CHALLENGE = "Q1m8kqvJx3pZt7aYc0Vh9nR2sLd6uF8eB5gH1wT9c";
-const STATIC_STATE = "123";
+const CODE_VERIFIER = "lacCN6M3-maMDu5eKbt6mAI3dqBVlQYe6oxGRciF_0U";
+const CODE_CHALLENGE = "zKMfGd0F7A1BNUTgELwy5bnDMPKVu4aYwBRK4_6RqX4";
+const STATIC_STATE = "static_state_123";
 
-/**
- * LOGIN (ONLY PKCE PART CHANGED)
- */
 function loginWithBase() {
   sessionStorage.setItem("oauth_state", STATIC_STATE);
 
@@ -45,15 +36,12 @@ function loginWithBase() {
     "&redirect_uri=" + encodeURIComponent("https://base-t56v.onrender.com/callback") +
     "&scope=" + encodeURIComponent("agent_wallet:transact agent_wallet:escalate") +
     "&state=" + encodeURIComponent(STATIC_STATE) +
-    "&code_challenge=" + encodeURIComponent(CODE_CHALLENGE) +
+    "&code_challenge=" + CODE_CHALLENGE +
     "&code_challenge_method=S256";
 
   window.location.href = authUrl;
 }
 
-/**
- * Exchange token (ONLY verifier changed to static)
- */
 async function getAccessToken(code) {
   try {
 
@@ -89,9 +77,6 @@ async function getAccessToken(code) {
   }
 }
 
-/**
- * MCP request (UNCHANGED)
- */
 async function sendMcpRequest() {
   if (!savedAccessToken) return;
 
@@ -113,9 +98,6 @@ async function sendMcpRequest() {
   }
 }
 
-/**
- * INIT (UNCHANGED)
- */
 window.onload = () => {
   const code = getAuthorizationCodeFromUrl();
   const state = getStateFromUrl();
