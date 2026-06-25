@@ -15,35 +15,37 @@ app.use(express.static(path.join(__dirname, "public")));
  * OAuth callback
  */
 app.get("/callback", (req, res) => {
-  const code = req.query.code;
-  res.redirect("/?code=" + encodeURIComponent(code));
+  const { code, state } = req.query;
+
+  // pass both code + state back to frontend
+  res.redirect(
+    "/?code=" + encodeURIComponent(code) +
+    "&state=" + encodeURIComponent(state || "")
+  );
 });
 
 /**
- * Exchange authorization code → access token (Base MCP)
+ * Exchange authorization code → access token (PKCE)
  */
 app.post("/exchange", async (req, res) => {
   try {
-    const { code } = req.body;
+    const { code, code_verifier } = req.body;
 
     const params = new URLSearchParams();
     params.append("grant_type", "authorization_code");
-    params.append("client_id", "5946b2e3-255c-4627-864f-ccf88c16b7b6");
+    params.append("client_id", "0b5c8965-b8b6-4259-a7b9-fc439b86dca2");
     params.append("code", code);
-    params.append("redirect_uri", "https://google.com/callback");
-    params.append("code_verifier", "YOUR_CODE_VERIFIER");
+    params.append("redirect_uri", "https://base-t56v.onrender.com/callback");
+    params.append("code_verifier", code_verifier);
 
-    const tokenRes = await fetch(
-      "https://mcp.base.org/token",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Accept": "application/json"
-        },
-        body: params.toString()
-      }
-    );
+    const tokenRes = await fetch("https://mcp.base.org/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json"
+      },
+      body: params.toString()
+    });
 
     const token = await tokenRes.json();
 
