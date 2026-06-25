@@ -1,0 +1,118 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login with Base</title>
+
+<script>
+
+function getAuthorizationCodeFromUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('code');
+}
+
+function loginWithBase() {
+  const authUrl =
+    "https://mcp.base.org/authorize" +
+    "?response_type=code" +
+    "&client_id=5946b2e3-255c-4627-864f-ccf88c16b7b6" +
+    "&redirect_uri=" + encodeURIComponent("https://google.com/callback") +
+    "&scope=" + encodeURIComponent("agent_wallet:transact agent_wallet:escalate") +
+    "&code_challenge=YOUR_CODE_CHALLENGE" +
+    "&code_challenge_method=S256";
+
+  window.location.href = authUrl;
+}
+
+let savedAccessToken = null;
+
+async function getAccessToken(code) {
+  try {
+    const res = await fetch("/exchange", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code })
+    });
+
+    const data = await res.json();
+
+    if (data.access_token) {
+      savedAccessToken = data.access_token;
+
+      document.getElementById("access-token").textContent =
+        "Access Token: " + data.access_token;
+
+      document.getElementById("send-request-btn").disabled = false;
+    }
+
+    document.getElementById("authorization-code").textContent =
+      "Access Token Processed";
+
+    document.getElementById("user-info").textContent =
+      JSON.stringify(data.result ?? data, null, 2);
+
+  } catch (err) {
+    document.getElementById("authorization-code").textContent =
+      "Error: " + err;
+  }
+}
+
+async function sendMcpRequest() {
+  if (!savedAccessToken) return;
+
+  try {
+    const res = await fetch("/mcp-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ access_token: savedAccessToken })
+    });
+
+    const data = await res.json();
+
+    document.getElementById("mcp-response").textContent =
+      JSON.stringify(data, null, 2);
+
+  } catch (err) {
+    document.getElementById("mcp-response").textContent =
+      "Error: " + err;
+  }
+}
+
+window.onload = () => {
+  const code = getAuthorizationCodeFromUrl();
+
+  if (!code) {
+    loginWithBase();
+    return;
+  }
+
+  document.getElementById("authorization-code").textContent =
+    "Authorization Code: " + code;
+
+  getAccessToken(code);
+};
+
+</script>
+</head>
+
+<body>
+<h1>Login with Base</h1>
+
+<button onclick="loginWithBase()">Login</button>
+
+<p id="authorization-code"></p>
+<p id="access-token" style="word-break: break-all;"></p>
+
+<h2>User Information</h2>
+<pre id="user-info"></pre>
+
+<h2>Send MCP Request</h2>
+<button id="send-request-btn" onclick="sendMcpRequest()" disabled>
+  Send Request
+</button>
+
+<pre id="mcp-response"></pre>
+
+</body>
+</html>
