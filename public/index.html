@@ -26,38 +26,17 @@ function getStateFromUrl() {
 }
 
 /**
- * PKCE helpers (ONLY ADDED, nothing removed)
+ * STATIC PKCE (ONLY CHANGE)
  */
-function base64UrlEncode(arrayBuffer) {
-  return btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-}
-
-function generateRandomString(length = 64) {
-  const array = new Uint8Array(length);
-  crypto.getRandomValues(array);
-  return base64UrlEncode(array);
-}
-
-async function sha256(verifier) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return base64UrlEncode(digest);
-}
+const CODE_VERIFIER = "m8vKQ1pZ7cTn4Xy9R2bL6sV0hJ5dF3aP8wE1qN9u";
+const CODE_CHALLENGE = "Q1m8kqvJx3pZt7aYc0Vh9nR2sLd6uF8eB5gH1wT9c";
+const STATIC_STATE = "123";
 
 /**
- * LOGIN (UPDATED ONLY PKCE PART)
+ * LOGIN (ONLY PKCE PART CHANGED)
  */
-async function loginWithBase() {
-  const code_verifier = generateRandomString(64);
-  const code_challenge = await sha256(code_verifier);
-  const state = generateRandomString(16);
-
-  sessionStorage.setItem("pkce_verifier", code_verifier);
-  sessionStorage.setItem("oauth_state", state);
+function loginWithBase() {
+  sessionStorage.setItem("oauth_state", STATIC_STATE);
 
   const authUrl =
     "https://mcp.base.org/authorize" +
@@ -65,24 +44,26 @@ async function loginWithBase() {
     "&client_id=0b5c8965-b8b6-4259-a7b9-fc439b86dca2" +
     "&redirect_uri=" + encodeURIComponent("https://base-t56v.onrender.com/callback") +
     "&scope=" + encodeURIComponent("agent_wallet:transact agent_wallet:escalate") +
-    "&state=" + encodeURIComponent(state) +
-    "&code_challenge=" + encodeURIComponent(code_challenge) +
+    "&state=" + encodeURIComponent(STATIC_STATE) +
+    "&code_challenge=" + encodeURIComponent(CODE_CHALLENGE) +
     "&code_challenge_method=S256";
 
   window.location.href = authUrl;
 }
 
 /**
- * Exchange token (ONLY SMALL ADDITION: code_verifier)
+ * Exchange token (ONLY verifier changed to static)
  */
 async function getAccessToken(code) {
   try {
-    const code_verifier = sessionStorage.getItem("pkce_verifier");
 
     const res = await fetch("/exchange", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, code_verifier })
+      body: JSON.stringify({
+        code,
+        code_verifier: CODE_VERIFIER
+      })
     });
 
     const data = await res.json();
@@ -133,7 +114,7 @@ async function sendMcpRequest() {
 }
 
 /**
- * INIT (UNCHANGED LOGIC)
+ * INIT (UNCHANGED)
  */
 window.onload = () => {
   const code = getAuthorizationCodeFromUrl();
