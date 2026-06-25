@@ -15,9 +15,9 @@ app.use(express.static(path.join(__dirname, "public")));
  * OAuth callback
  */
 app.get("/callback", (req, res) => {
-  const { code, state } = req.query;
+  const code = req.query.code;
+  const state = req.query.state;
 
-  // pass both code + state back to frontend
   res.redirect(
     "/?code=" + encodeURIComponent(code) +
     "&state=" + encodeURIComponent(state || "")
@@ -25,7 +25,7 @@ app.get("/callback", (req, res) => {
 });
 
 /**
- * Exchange authorization code → access token (PKCE)
+ * Exchange code → token (PKCE ENABLED)
  */
 app.post("/exchange", async (req, res) => {
   try {
@@ -64,7 +64,7 @@ app.post("/exchange", async (req, res) => {
 });
 
 /**
- * MCP tool call → get_portfolio
+ * MCP request (UNCHANGED)
  */
 app.post("/mcp-request", async (req, res) => {
   try {
