@@ -11,9 +11,6 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-/**
- * OAuth callback
- */
 app.get("/callback", (req, res) => {
   const code = req.query.code;
   const state = req.query.state;
@@ -24,9 +21,6 @@ app.get("/callback", (req, res) => {
   );
 });
 
-/**
- * Exchange code → token
- */
 app.post("/exchange", async (req, res) => {
   try {
     const { code, code_verifier } = req.body;
@@ -63,9 +57,6 @@ app.post("/exchange", async (req, res) => {
   }
 });
 
-/**
- * MCP request (UNCHANGED)
- */
 app.post("/mcp-request", async (req, res) => {
   try {
     const { access_token } = req.body;
