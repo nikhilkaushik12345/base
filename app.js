@@ -64,7 +64,7 @@ app.post("/mcp-request", async (req, res) => {
   try {
     const { access_token } = req.body;
 
-    const mcpRes = await fetch("https://mcp.base.org/mcp", {
+    const mcpRes = await fetch("https://mcp.base.org/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
