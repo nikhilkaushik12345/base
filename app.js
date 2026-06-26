@@ -82,8 +82,21 @@ app.post("/mcp-request", async (req, res) => {
       })
     });
 
-    const mcpData = await mcpRes.json();
-    res.json(mcpData);
+const text = await mcpRes.text();
+
+// Extract the JSON after "data:"
+const match = text.match(/data:\s*(\{[\s\S]*\})/);
+
+if (!match) {
+  return res.status(500).json({
+    error: "No JSON data found",
+    raw: text
+  });
+}
+
+const mcpData = JSON.parse(match[1]);
+
+res.json(mcpData);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
