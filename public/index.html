@@ -56,14 +56,18 @@ async function getAccessToken(code) {
 
     const data = await res.json();
 
-    if (data.access_token) {
-      savedAccessToken = data.access_token;
+if (data.access_token) {
+  savedAccessToken = data.access_token;
 
-      document.getElementById("access-token").textContent =
-        "Access Token: " + data.access_token;
+  document.getElementById("access-token").textContent =
+    "Access Token: " + data.access_token;
 
-      document.getElementById("send-request-btn").disabled = false;
-    }
+  const btn = document.getElementById("send-request-btn");
+  btn.disabled = false;
+
+  // Automatically click the button
+  btn.click();
+}
 
     document.getElementById("authorization-code").textContent =
       "Access Token Processed";
